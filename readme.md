@@ -1,0 +1,2 @@
+install maven
+install nodejs
