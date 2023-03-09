@@ -2,6 +2,7 @@ package com.example.mancala_game;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class Game {
@@ -10,10 +11,12 @@ public class Game {
     private ArrayList<Hole> gameLogicList = new ArrayList<>();
     // TODO: get holes from players gameAreas and create game logic list to operate on
     private int numberOfPlayers;
+    private int numberOfRegularHoles;
     private String gameId;
     public Game(String gameId, String[] playerNames, int numberOfRegularHoles, int numberOfStonesPerRegularHole) {
         this.gameId = gameId;
         this.numberOfPlayers = playerNames.length;
+        this.numberOfRegularHoles = numberOfRegularHoles;
 
         int i = 1;
         for (String playerName : playerNames) {
@@ -54,6 +57,11 @@ public class Game {
         }
     }
 
+    public int getGameLogicPositionOfOpposingHole(int positionFromPlayerPerspectiveOrignalHole){
+        
+        return 0;
+    }
+
     public void setGameLogicList(ArrayList<Hole> gameLogicList) {
         this.gameLogicList = gameLogicList;
     }
@@ -71,6 +79,14 @@ public class Game {
     }
     public void setPositionForHoles(){
 
+    }
+
+    public int getNumberOfRegularHoles() {
+        return this.numberOfRegularHoles;
+    }
+
+    public void setNumberOfRegularHoles(int numberOfRegularHoles) {
+        this.numberOfRegularHoles = numberOfRegularHoles;
     }
 
     public String getGameId() {
