@@ -17,6 +17,20 @@ public class MancalaGameController {
         return myGame;
     }
 
-    //TODO: postmapping for selected position etc.
 
+    //TODO: postmapping for selected position etc.
+    @GetMapping("/startGame")
+    public Game startGame(){
+        this.myGame.setGameState(GameState.STARTED);
+
+        String startingPlayerName = "player1";
+
+        for(Player player : this.myGame.getPlayers()){
+            if (player.getPlayerName().equals(startingPlayerName)){
+                this.myGame.setActivePlayer(player);
+            }
+        }
+
+        return this.myGame;
+    }
 }

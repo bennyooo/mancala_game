@@ -7,6 +7,9 @@ import java.util.List;
 
 public class Game {
     // has two game areas and a start and stop method
+    private GameState gameState;
+
+    private Player activePlayer;
     private ArrayList<Player> players = new ArrayList<>();
     private ArrayList<Hole> gameLogicList = new ArrayList<>();
     // TODO: get holes from players gameAreas and create game logic list to operate on
@@ -31,7 +34,7 @@ public class Game {
     }
 
     public ArrayList<Hole> getGameLogicList() {
-        return gameLogicList;
+        return this.gameLogicList;
     }
 
     public void initializeGameLogicList(){
@@ -58,7 +61,7 @@ public class Game {
     }
 
     public int getGameLogicPositionOfOpposingHole(int positionFromPlayerPerspectiveOrignalHole){
-        
+
         return 0;
     }
 
@@ -67,11 +70,11 @@ public class Game {
     }
 
     public ArrayList<Player> getPlayers() {
-        return players;
+        return this.players;
     }
 
     public int getNumberOfPlayers() {
-        return numberOfPlayers;
+        return this.numberOfPlayers;
     }
 
     public void setGameLogicList(){
@@ -90,10 +93,26 @@ public class Game {
     }
 
     public String getGameId() {
-        return gameId;
+        return this.gameId;
     }
 
     public void setGameId(String gameId) {
         this.gameId = gameId;
+    }
+
+    public GameState getGameState() {
+        return this.gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    public Player getActivePlayer() {
+        return this.activePlayer;
+    }
+
+    public void setActivePlayer(Player activePlayer) {
+        this.activePlayer = activePlayer;
     }
 }
