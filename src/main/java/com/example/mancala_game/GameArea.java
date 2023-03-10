@@ -66,4 +66,22 @@ public class GameArea {
     public void setMancalaHole(MancalaHole mancalaHole) {
         this.mancalaHole = mancalaHole;
     }
+
+    public int getGameLogicPositionFromPlayerPerspectivePosition(int positionFromPlayerPerspective){
+        for(RegularHole regularHole : regularHoles){
+            if (regularHole.getPositionFromPlayerPerspective() == positionFromPlayerPerspective){
+                return regularHole.getPositionInGameLogic();
+            }
+        }
+        return 0;
+    }
+
+    public Hole getHoleFromGameLogicPosition(int gameLogicPosition){
+        for(RegularHole regularHole : regularHoles){
+            if (regularHole.getPositionInGameLogic() == gameLogicPosition){
+                return regularHole;
+            }
+        }
+        return null;
+    }
 }

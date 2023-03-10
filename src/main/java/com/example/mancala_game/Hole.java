@@ -46,4 +46,11 @@ public class Hole {
     public void setMancalaHole(boolean mancalaHole) {
         this.isMancalaHole = mancalaHole;
     }
+
+    public int takeAllStonesFromHole(){
+        int takenStones = this.stonesInHole;
+        this.stonesInHole = 0;
+
+        return takenStones;
+    }
 }

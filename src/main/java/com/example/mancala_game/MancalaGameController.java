@@ -14,23 +14,55 @@ public class MancalaGameController {
 
         this.myGame.initializeGameLogicList();
 
-        return myGame;
+        return this.myGame;
     }
 
 
     //TODO: postmapping for selected position etc.
     @GetMapping("/startGame")
-    public Game startGame(){
-        this.myGame.setGameState(GameState.STARTED);
-
-        String startingPlayerName = "player1";
-
-        for(Player player : this.myGame.getPlayers()){
-            if (player.getPlayerName().equals(startingPlayerName)){
-                this.myGame.setActivePlayer(player);
-            }
+    public Player startGame(){
+        try {
+            this.myGame.setGameState(GameState.STARTED);
+        }
+        catch (NullPointerException ex){
+            System.out.println("Game not started");
+            System.out.println(ex.getMessage());
         }
 
+        // get first player from dequeue and add him again at the end
+        this.myGame.setActivePlayer(this.myGame.getPlayerGameOrder().removeFirst());
+        this.myGame.getPlayerGameOrder().addLast(this.myGame.getActivePlayer());
+
+        return this.myGame.getActivePlayer();
+    }
+
+    @PostMapping("/moveStones")
+    public Game moveStones(@RequestBody MoveAction moveAction){
+        int startingPosition = moveAction.getStartPosition();
+        // get gameLogicPosition from Players gameArea
+        int gameLogicStartPosition = this.myGame.getActivePlayer().getGameArea().getGameLogicPositionFromPlayerPerspectivePosition(startingPosition);
+
+        //int allStonesInHole = this.myGame.getActivePlayer().getGameArea().getHoleFromGameLogicPosition(gameLogicStartPosition).takeAllStonesFromHole();
+
+        this.myGame.fillFollowingHolesInGameLogic(gameLogicStartPosition);
+
+        // set active player for next round
+        this.myGame.setActivePlayer(this.myGame.getPlayerGameOrder().removeFirst());
+        this.myGame.getPlayerGameOrder().addLast(this.myGame.getActivePlayer());
+
+        if (this.myGame.checkIfActiveGameAreaIsEmpty(this.myGame.getActivePlayer())){
+            this.myGame.setGameState(GameState.ENDED);
+        }
         return this.myGame;
+    }
+
+    //TODO: implement tests: game needs to be created and started. startPosition stones cant be 0. startPosition of hole can't be >6 or <1. gamelogicposition has to be unique. total number of stones should not be higher than x
+
+    public Game getMyGame() {
+        return this.myGame;
+    }
+
+    public void setMyGame(Game myGame) {
+        this.myGame = myGame;
     }
 }
