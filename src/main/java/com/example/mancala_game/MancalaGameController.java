@@ -55,9 +55,20 @@ public class MancalaGameController {
         this.myGame.setActivePlayer(this.myGame.getPlayerGameOrder().removeFirst());
         this.myGame.getPlayerGameOrder().addLast(this.myGame.getActivePlayer());
 
-        if (this.myGame.checkIfActiveGameAreaIsEmpty(this.myGame.getActivePlayer())){
-            this.myGame.setGameState(GameState.ENDED);
+        // update scores and check if game area empty
+        for (Player player : this.myGame.getPlayers()){
+            player.setPlayerScore(player.getGameArea().getMancalaHole().getStonesInHole());
+
+            if (this.myGame.checkIfGameAreaIsEmpty(player)){
+                this.myGame.setGameState(GameState.ENDED);
+            }
         }
+
+        // check if the number of stones in the game doesn't deviate from the initial number
+        if (this.myGame.getAllStonesInGame() != this.myGame.getInitialNumberOfStonesInGame()){
+            throw new RuntimeException("Mismatch of stones in game!");
+        }
+
         return this.myGame;
     }
 

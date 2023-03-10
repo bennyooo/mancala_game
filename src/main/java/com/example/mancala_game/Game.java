@@ -12,12 +12,19 @@ public class Game {
     private ArrayList<Hole> gameLogicList = new ArrayList<>();
     private Deque<Hole> gameLogicDeque = new ArrayDeque<>();
     private int numberOfPlayers;
+
+    private int numberOfStonesPerRegularHole;
+
+    private int initialNumberOfStonesInGame;
     private int numberOfRegularHoles;
     private String gameId;
     public Game(String gameId, List<String> playerNames, int numberOfRegularHoles, int numberOfStonesPerRegularHole) {
         this.gameId = gameId;
         this.numberOfPlayers = playerNames.size();
         this.numberOfRegularHoles = numberOfRegularHoles;
+        this.numberOfStonesPerRegularHole = numberOfStonesPerRegularHole;
+
+        this.initialNumberOfStonesInGame = numberOfRegularHoles * numberOfStonesPerRegularHole * playerNames.size();
 
         int i = 1;
         for (String playerName : playerNames) {
@@ -25,11 +32,10 @@ public class Game {
             String oppositePlayerName = playerNames.stream().filter(x -> !x.equals(playerName)).findFirst().orElse(null);
 
             if (i % 2 == 0) {
-
-                this.players.add(new Player(playerName, oppositePlayerName, new GameArea(AreaOrientation.REGULAR, numberOfRegularHoles, numberOfStonesPerRegularHole)));
+                this.players.add(new Player(playerName, oppositePlayerName, new GameArea(AreaOrientation.UPSIDE_DOWN, numberOfRegularHoles, numberOfStonesPerRegularHole)));
             }
             else {
-                this.players.add(new Player(playerName, oppositePlayerName, new GameArea(AreaOrientation.UPSIDE_DOWN, numberOfRegularHoles, numberOfStonesPerRegularHole)));
+                this.players.add(new Player(playerName, oppositePlayerName, new GameArea(AreaOrientation.REGULAR, numberOfRegularHoles, numberOfStonesPerRegularHole)));
             }
             i++;
         }
@@ -39,6 +45,10 @@ public class Game {
 
     public ArrayList<Hole> getGameLogicList() {
         return this.gameLogicList;
+    }
+
+    public void setGameLogicList(ArrayList<Hole> gameLogicList) {
+        this.gameLogicList = gameLogicList;
     }
 
     public void initializeGameLogicList(){
@@ -71,8 +81,12 @@ public class Game {
         return 0;
     }
 
-    public void setGameLogicList(ArrayList<Hole> gameLogicList) {
-        this.gameLogicList = gameLogicList;
+    public int getNumberOfStonesPerRegularHole() {
+        return numberOfStonesPerRegularHole;
+    }
+
+    public void setNumberOfStonesPerRegularHole(int numberOfStonesPerRegularHole) {
+        this.numberOfStonesPerRegularHole = numberOfStonesPerRegularHole;
     }
 
     public ArrayList<Player> getPlayers() {
@@ -131,6 +145,14 @@ public class Game {
         return null;
     }
 
+    public int getInitialNumberOfStonesInGame() {
+        return this.initialNumberOfStonesInGame;
+    }
+
+    public void setInitialNumberOfStonesInGame(int initialNumberOfStonesInGame) {
+        this.initialNumberOfStonesInGame = initialNumberOfStonesInGame;
+    }
+
     public void fillFollowingHolesInGameLogic(int gameLogicStartPosition){
         int stonesToDistribute = 0;
 
@@ -164,13 +186,28 @@ public class Game {
 
                 // last hole was regular hole that now has one stone -> rule of capturing stones from opposite field applies
                 if (activeHole instanceof RegularHole && activeHole.getStonesInHole() == 1){
-                    int positionFromPlayerPerspectiveOwnHole = activeHole.getPositionFromPlayerPerspective();
+                    // we need to know on which side we are
+                    int positionFromPlayerPerspectiveActiveHole = activeHole.getPositionFromPlayerPerspective();
 
-                    Hole oppositeHole = this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName()).getGameArea().getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveOwnHole);
+                    int allStonesFromOppositeHole = 0;
 
-                    int totalStones = oppositeHole.takeAllStonesFromHole() + activeHole.takeAllStonesFromHole();
+                    // check if active hole belongs to opponents area, if so take own game area to remove stones
+                    if (this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName()).getGameArea().getRegularHoles().contains(activeHole)){
+                        allStonesFromOppositeHole = this.activePlayer.getGameArea()
+                                .getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveActiveHole)
+                                .takeAllStonesFromHole();
+                    }
+                    else {
+                        allStonesFromOppositeHole = this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName())
+                                .getGameArea().getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveActiveHole)
+                                .takeAllStonesFromHole();
+                    }
 
-                    this.activePlayer.getGameArea().getMancalaHole().addMultipleStonesToMancalaHole(totalStones);
+                    // only take stones if the opposite hole is not empty
+                    if (allStonesFromOppositeHole > 0) {
+                        int totalStones = allStonesFromOppositeHole + activeHole.takeAllStonesFromHole();
+                        this.activePlayer.getGameArea().getMancalaHole().addMultipleStonesToMancalaHole(totalStones);
+                    }
                 }
             }
         }
@@ -185,15 +222,26 @@ public class Game {
         this.playerGameOrder = playerGameOrder;
     }
 
-    public int getAllStonesInRegularHoles(Player player){
-        int allStones = 0;
-        for (RegularHole hole : player.getGameArea().getRegularHoles()){
-            allStones += hole.getStonesInHole();
+    public int getAllStonesInGame(){
+        int allStonesInGame = 0;
+        for (Player player : players){
+            int stonesInRegularHoles = getAllStonesInRegularHoles(player);
+            int stonesInMancalaHole = player.getGameArea().getMancalaHole().getStonesInHole();
+
+            allStonesInGame += (stonesInRegularHoles + stonesInMancalaHole);
         }
-        return allStones;
+        return allStonesInGame;
     }
 
-    public boolean checkIfActiveGameAreaIsEmpty(Player player){
+    public int getAllStonesInRegularHoles(Player player){
+        int allStonesInRegularHoles = 0;
+        for (RegularHole hole : player.getGameArea().getRegularHoles()){
+            allStonesInRegularHoles += hole.getStonesInHole();
+        }
+        return allStonesInRegularHoles;
+    }
+
+    public boolean checkIfGameAreaIsEmpty(Player player){
         return getAllStonesInRegularHoles(player) == 0;
     }
 

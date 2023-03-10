@@ -1,12 +1,15 @@
 package com.example.mancala_game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameArea {
     // has Holes. Needs methods to initialize holes.
 
     // MancalaHole can be in first or last position
     // the game logic list will consist of two concatenated lists (?)
     private AreaOrientation areaOrientation;
-    private RegularHole[] regularHoles;
+    private List<RegularHole> regularHoles = new ArrayList<>();
     private MancalaHole mancalaHole;
     private int numberOfRegularHoles;
     private int numberOfStonesPerRegularHole;
@@ -17,10 +20,8 @@ public class GameArea {
         this.numberOfRegularHoles = numberOfRegularHoles;
         this.numberOfStonesPerRegularHole = numberOfStonesPerRegularHole;
 
-        this.regularHoles = new RegularHole[this.numberOfRegularHoles];
-
         for(int i = 0; i < this.numberOfRegularHoles; i++){
-            this.regularHoles[i] = new RegularHole(numberOfStonesPerRegularHole);
+            this.regularHoles.add(new RegularHole(numberOfStonesPerRegularHole));
         }
         this.mancalaHole = new MancalaHole(0);
 
@@ -51,11 +52,11 @@ public class GameArea {
         this.numberOfStonesPerRegularHole = numberOfStonesPerRegularHole;
     }
 
-    public RegularHole[] getRegularHoles() {
-        return regularHoles;
+    public List<RegularHole> getRegularHoles() {
+        return this.regularHoles;
     }
 
-    public void setRegularHoles(RegularHole[] regularHoles) {
+    public void setRegularHoles(List<RegularHole> regularHoles) {
         this.regularHoles = regularHoles;
     }
 
