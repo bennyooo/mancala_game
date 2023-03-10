@@ -14,18 +14,22 @@ public class Game {
     private int numberOfPlayers;
     private int numberOfRegularHoles;
     private String gameId;
-    public Game(String gameId, String[] playerNames, int numberOfRegularHoles, int numberOfStonesPerRegularHole) {
+    public Game(String gameId, List<String> playerNames, int numberOfRegularHoles, int numberOfStonesPerRegularHole) {
         this.gameId = gameId;
-        this.numberOfPlayers = playerNames.length;
+        this.numberOfPlayers = playerNames.size();
         this.numberOfRegularHoles = numberOfRegularHoles;
 
         int i = 1;
         for (String playerName : playerNames) {
+            // find the opposite PlayerName from player list. We need this later for identifying the opposite hole
+            String oppositePlayerName = playerNames.stream().filter(x -> !x.equals(playerName)).findFirst().orElse(null);
+
             if (i % 2 == 0) {
-                this.players.add(new Player(playerName, new GameArea(AreaOrientation.REGULAR, numberOfRegularHoles, numberOfStonesPerRegularHole)));
+
+                this.players.add(new Player(playerName, oppositePlayerName, new GameArea(AreaOrientation.REGULAR, numberOfRegularHoles, numberOfStonesPerRegularHole)));
             }
             else {
-                this.players.add(new Player(playerName, new GameArea(AreaOrientation.UPSIDE_DOWN, numberOfRegularHoles, numberOfStonesPerRegularHole)));
+                this.players.add(new Player(playerName, oppositePlayerName, new GameArea(AreaOrientation.UPSIDE_DOWN, numberOfRegularHoles, numberOfStonesPerRegularHole)));
             }
             i++;
         }
@@ -145,6 +149,7 @@ public class Game {
 
         for (int j = 1; j <= stonesToDistribute; j++){
             Hole activeHole = this.gameLogicDeque.removeFirst();
+            // only add stones to regular hole or the player's mancala hole
             if (activeHole instanceof RegularHole || activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())) {
                 activeHole.addStoneToHole();
             }
@@ -152,8 +157,21 @@ public class Game {
             this.gameLogicDeque.addLast(activeHole);
 
             // if the last hole is a mancala hole, the currently active player can go again
-            if (j == stonesToDistribute && activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())){
-                this.playerGameOrder.addLast(this.playerGameOrder.removeFirst());
+            if (j == stonesToDistribute){
+                if (activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())) {
+                    this.playerGameOrder.addLast(this.playerGameOrder.removeFirst());
+                }
+
+                // last hole was regular hole that now has one stone -> rule of capturing stones from opposite field applies
+                if (activeHole instanceof RegularHole && activeHole.getStonesInHole() == 1){
+                    int positionFromPlayerPerspectiveOwnHole = activeHole.getPositionFromPlayerPerspective();
+
+                    Hole oppositeHole = this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName()).getGameArea().getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveOwnHole);
+
+                    int totalStones = oppositeHole.takeAllStonesFromHole() + activeHole.takeAllStonesFromHole();
+
+                    this.activePlayer.getGameArea().getMancalaHole().addMultipleStonesToMancalaHole(totalStones);
+                }
             }
         }
 

@@ -84,4 +84,13 @@ public class GameArea {
         }
         return null;
     }
+
+    public Hole getHoleFromPlayerPerspectivePosition(int playerPerspectivePosition){
+        for(RegularHole regularHole : regularHoles){
+            if (regularHole.getPositionFromPlayerPerspective() == playerPerspectivePosition){
+                return regularHole;
+            }
+        }
+        return null;
+    }
 }

@@ -18,7 +18,6 @@ public class MancalaGameController {
     }
 
 
-    //TODO: postmapping for selected position etc.
     @GetMapping("/startGame")
     public Player startGame(){
         try {
@@ -37,8 +36,14 @@ public class MancalaGameController {
     }
 
     @PostMapping("/moveStones")
-    public Game moveStones(@RequestBody MoveAction moveAction){
+    public Game moveStones(@RequestBody MoveAction moveAction) {
         int startingPosition = moveAction.getStartPosition();
+
+        // check if the sent command came from the active player
+        if (!moveAction.getActivePlayerName().equals(this.myGame.getActivePlayer().getPlayerName())){
+            throw new Error("Player in action doesn't match active player");
+        }
+
         // get gameLogicPosition from Players gameArea
         int gameLogicStartPosition = this.myGame.getActivePlayer().getGameArea().getGameLogicPositionFromPlayerPerspectivePosition(startingPosition);
 
@@ -56,7 +61,14 @@ public class MancalaGameController {
         return this.myGame;
     }
 
-    //TODO: implement tests: game needs to be created and started. startPosition stones cant be 0. startPosition of hole can't be >6 or <1. gamelogicposition has to be unique. total number of stones should not be higher than x
+    //TODO:
+    // implement tests:
+    // game needs to be created and started before first move.
+    // startPosition stones cant be 0.
+    // startPosition of hole can't be >6 or <1.
+    // gamelogicposition has to be unique.
+    // total number of stones should not be higher than stones times regular holes
+    // after player1's turn his opponents m-hole should have the same stones
 
     public Game getMyGame() {
         return this.myGame;

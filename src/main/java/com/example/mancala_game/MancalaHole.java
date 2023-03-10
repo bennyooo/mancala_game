@@ -6,4 +6,8 @@ public class MancalaHole extends Hole{
         super(stones);
         super.setMancalaHole(true);
     }
+
+    public void addMultipleStonesToMancalaHole(int stones){
+        super.setStonesInHole(super.getStonesInHole() + stones);
+    }
 }
