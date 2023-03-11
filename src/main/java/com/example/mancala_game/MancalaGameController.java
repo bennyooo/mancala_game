@@ -83,6 +83,10 @@ public class MancalaGameController {
     // gamelogicposition has to be unique.
     // total number of stones should not be higher than stones times regular holes
     // after player1's turn his opponents m-hole should have the same stones
+    // test APIs:
+    // startGame should yield a game that is started
+    // createGame should yield a game with at least two players
+    // moveStones should yield a game where the chosen hole is empty
 
     public Game getMyGame() {
         return this.myGame;
