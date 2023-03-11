@@ -7,6 +7,6 @@ public class RegularHole extends Hole{
     // then we get the positionInGameLogic from positionFromPlayerPerspective
     public RegularHole(int stonesInHole) {
         super(stonesInHole);
-        super.setMancalaHole(false);
+        super.setIsMancalaHole(false);
     }
 }

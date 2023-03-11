@@ -39,11 +39,11 @@ public class Hole {
         this.positionFromPlayerPerspective = positionFromPlayerPerspective;
     }
 
-    public boolean isMancalaHole() {
+    public boolean getIsMancalaHole() {
         return this.isMancalaHole;
     }
 
-    public void setMancalaHole(boolean mancalaHole) {
+    public void setIsMancalaHole(boolean mancalaHole) {
         this.isMancalaHole = mancalaHole;
     }
 

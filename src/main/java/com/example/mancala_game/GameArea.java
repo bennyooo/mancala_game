@@ -1,5 +1,8 @@
 package com.example.mancala_game;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +17,8 @@ public class GameArea {
     private int numberOfRegularHoles;
     private int numberOfStonesPerRegularHole;
 
-    public GameArea(AreaOrientation areaOrientation, int numberOfRegularHoles, int numberOfStonesPerRegularHole) {
+    @JsonCreator
+    public GameArea(@JsonProperty("areaOrientation") AreaOrientation areaOrientation, @JsonProperty("numberOfRegularHoles") int numberOfRegularHoles,@JsonProperty("numberOfStonesPerRegularHole") int numberOfStonesPerRegularHole) {
         this.areaOrientation = areaOrientation;
 
         this.numberOfRegularHoles = numberOfRegularHoles;
@@ -24,8 +28,6 @@ public class GameArea {
             this.regularHoles.add(new RegularHole(numberOfStonesPerRegularHole));
         }
         this.mancalaHole = new MancalaHole(0);
-
-        // TODO: set positions of RegularHoles and mancala hole from Game class
     }
 
     public AreaOrientation getAreaOrientation() {

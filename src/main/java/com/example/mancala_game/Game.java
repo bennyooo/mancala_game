@@ -18,6 +18,7 @@ public class Game {
     private int initialNumberOfStonesInGame;
     private int numberOfRegularHoles;
     private String gameId;
+
     public Game(String gameId, List<String> playerNames, int numberOfRegularHoles, int numberOfStonesPerRegularHole) {
         this.gameId = gameId;
         this.numberOfPlayers = playerNames.size();

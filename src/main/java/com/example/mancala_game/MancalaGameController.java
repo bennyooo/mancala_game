@@ -7,6 +7,7 @@ public class MancalaGameController {
 
     private Game myGame;
 
+    @CrossOrigin
     @PostMapping("/createGame")
     public Game createGame(@RequestBody Game myGame) {
         // operations are done on this object
@@ -18,8 +19,9 @@ public class MancalaGameController {
     }
 
 
+    @CrossOrigin
     @GetMapping("/startGame")
-    public Player startGame(){
+    public Game startGame(){
         try {
             this.myGame.setGameState(GameState.STARTED);
         }
@@ -32,9 +34,10 @@ public class MancalaGameController {
         this.myGame.setActivePlayer(this.myGame.getPlayerGameOrder().removeFirst());
         this.myGame.getPlayerGameOrder().addLast(this.myGame.getActivePlayer());
 
-        return this.myGame.getActivePlayer();
+        return this.myGame;
     }
 
+    @CrossOrigin
     @PostMapping("/moveStones")
     public Game moveStones(@RequestBody MoveAction moveAction) {
         int startingPosition = moveAction.getStartPosition();
