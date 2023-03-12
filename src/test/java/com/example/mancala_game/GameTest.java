@@ -23,15 +23,21 @@ public class GameTest {
         activeGame = new Game(gameId, playerNames, numberOfRegularHoles, numberOfStonesPerRegularHole);
         activeGame.initializeGameLogicStructures();
     }
-    
+
+    /**
+     * If we send the wrong playerName, the game shouldn't change i.e. the roundsPlayed should be the same
+     */
     @Test
     public void givenWrongPlayer_whenMovingStone_thenCheckIfRoundsNotIncreasing(){
 
         activeGame.startGame();
         String actualActivePlayerName = activeGame.getActivePlayer().getPlayerName();
-        String otherPlayerName = playerNames.stream().filter(x -> !x.equals(actualActivePlayerName)).findFirst().orElse(null);
 
-        // if we send the wrong playerName, the game shouldn't change i.e. the roundsPlayed should be the same
+        // get a playerName other than the active player's name
+        String otherPlayerName = playerNames.stream().filter(x -> !x.equals(actualActivePlayerName))
+                .findFirst()
+                .orElse(null);
+
         MoveAction moveAction = new MoveAction(0, otherPlayerName);
         int roundBeforeMove = activeGame.getRoundsPlayed();
         activeGame.performGameAction(moveAction);
@@ -39,4 +45,18 @@ public class GameTest {
 
         Assertions.assertEquals(roundBeforeMove, roundAfterMove);
     }
+
+    /**
+     * If a player selects a number outside of 1-6 the game should continue and let the player decide again.
+     */
+    @Test
+    public void givenOutOfBoundsPosition_whenMovingStones_thenCheckIfPlayerStillActive(){
+        activeGame.startGame();
+
+        // get min and max of position, subtract/add 1 and send moveAction
+
+    }
+
+    // Implement game hint to see messages in client (wrong position etc.)
+    // Test if player can go again, test if player can steal stones, test if chosen field has stones, otherwise go again.
 }

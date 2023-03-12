@@ -4,10 +4,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Game {
-    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private final transient Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private GameState gameState;
 
     private Player activePlayer;
+    private String playerNameWhoWon = "";
     private ArrayList<Player> players = new ArrayList<>();
     private Deque<Player> playerGameOrder = new ArrayDeque<>();
     private ArrayList<Hole> gameLogicList = new ArrayList<>();
@@ -88,6 +89,15 @@ public class Game {
         this.getPlayerGameOrder().addLast(this.getActivePlayer());
     }
 
+    public GameArea getGameAreaForPlayerName(String playerName){
+        for (Player player : this.getPlayers()){
+            if (player.getPlayerName().equals(playerName)){
+                return player.getGameArea();
+            }
+        }
+        return null;
+    }
+
     public Game performGameAction(GameAction gameAction){
 
         if(gameAction instanceof MoveAction moveAction){
@@ -116,6 +126,8 @@ public class Game {
 
                     if (this.checkIfGameAreaIsEmpty(player)) {
                         this.setGameState(GameState.ENDED);
+
+                        this.setPlayerNameWhoWon(Objects.requireNonNull(this.getPlayers().stream().max(Comparator.comparing(Player::getPlayerScore)).orElse(null)).getPlayerName());
                     }
                 }
             }
@@ -266,6 +278,14 @@ public class Game {
             }
         }
 
+    }
+
+    public String getPlayerNameWhoWon() {
+        return this.playerNameWhoWon;
+    }
+
+    public void setPlayerNameWhoWon(String playerNameWhoWon) {
+        this.playerNameWhoWon = playerNameWhoWon;
     }
 
     public Deque<Player> getPlayerGameOrder() {

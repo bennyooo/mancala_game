@@ -18,17 +18,20 @@ import java.util.List;
 
 public class MancalaGameFrontEnd {
 
-
     public static void main(String args[]){
         boolean gameRunning = false;
-        int numberOfRounds = 0;
-
-        String createGameResponse = callCreateGame();
-
-        String startGameResponse = callStartGame();
+        Gson gson = new Gson();
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        Gson gson = new Gson();
+        List<String> playerList = new ArrayList<>();
+        playerList.add("player1");
+        playerList.add("player2");
+
+        String createGameResponse = callCreateGame("Test123", playerList, 6, 3);
+        assert gson.fromJson(createGameResponse, Game.class).getGameState().equals(GameState.CREATED);
+
+        String startGameResponse = callStartGame();
+
         Game game = gson.fromJson(startGameResponse, Game.class);
 
         if (game.getGameState() == GameState.STARTED){
@@ -38,12 +41,10 @@ public class MancalaGameFrontEnd {
         GameArea[] gameAreasToRender = new GameArea[game.getNumberOfPlayers()];
 
         while (gameRunning) {
-            numberOfRounds++;
-            // TODO: we only need to render after every moveStones
             if (game.getGameState() != GameState.ENDED) {
                 System.out.println("\n");
                 System.out.println("========================================");
-                System.out.println("Running game: " + game.getGameId() + " round " + numberOfRounds);
+                System.out.println("Running game: " + game.getGameId() + " round " + game.getRoundsPlayed());
 
                 System.out.println("Players: " + game.getPlayers().get(0).getPlayerName() + " " + game.getPlayers().get(1).getPlayerName());
                 String activePlayerName = game.getActivePlayer().getPlayerName();
@@ -65,8 +66,7 @@ public class MancalaGameFrontEnd {
                     System.out.println(stringToRender);
                 }
 
-                // TODO: read input and update game object
-                System.out.print("\n Select position of hole:");
+                System.out.print("\n Select position of hole (1-6):");
                 try {
                     int selectedPosition = Integer.parseInt(reader.readLine());
                     game = gson.fromJson(callMoveStones(selectedPosition, activePlayerName), Game.class);
@@ -79,39 +79,40 @@ public class MancalaGameFrontEnd {
                 gameRunning = false;
             }
         }
-        // TODO: print winner
-        //System.out.println(game);
+        String playerNameWhoWon = game.getPlayerNameWhoWon();
+        System.out.println("Game finished, " + playerNameWhoWon + " won with " + game.getPlayerByPlayerName(playerNameWhoWon).getPlayerScore() + " points!");
     }
 
     public static String renderGameAreaForConsole(GameArea gameArea){
-        String stringToRender = "";
+        StringBuilder stringToRender = new StringBuilder();
         ArrayList<Hole> holesToDisplay = new ArrayList<>();
 
         if (gameArea.getAreaOrientation() == AreaOrientation.REGULAR){
-            stringToRender += "     ";
+            // TODO: create number of " " characters dynamically based on the stones in the opponents mancala hole
+            stringToRender.append("  ").append(" ").append("  ");
             holesToDisplay.addAll(gameArea.getRegularHoles());
             holesToDisplay.add(gameArea.getMancalaHole());
         }
         else {
             holesToDisplay.add(gameArea.getMancalaHole());
-            // TODO: reverse order of regularHoles
             gameArea.getRegularHoles().sort(Comparator.comparing(Hole::getPositionInGameLogic).reversed());
             holesToDisplay.addAll(gameArea.getRegularHoles());
         }
 
         for (Hole hole : holesToDisplay){
             if (!hole.getIsMancalaHole()){
-                stringToRender += "|" + hole.getStonesInHole() + "|";
+                stringToRender.append("|").append(hole.getStonesInHole()).append("|");
             }
             else {
-                stringToRender += "**" + hole.getStonesInHole() + "**";
+                stringToRender.append("**").append(hole.getStonesInHole()).append("**");
             }
         }
 
-        return stringToRender;
+        return stringToRender.toString();
     }
 
-    public static String callCreateGame(){
+    //TODO: use parameters
+    public static String callCreateGame(String gameId, List<String> playerList, int numberOfRegularHoles, int numberOfStonesPerRegular){
 
         final String url = "http://localhost:8080/createGame";
 
@@ -120,18 +121,14 @@ public class MancalaGameFrontEnd {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        List<String> playerList = new ArrayList<>();
-        playerList.add("player1");
-        playerList.add("player2");
-
         JSONObject gameCreationObject = new JSONObject();
         gameCreationObject
-                .put("gameId", "test123")
+                .put("gameId", gameId)
                 .put("playerNames", playerList)
-                .put("numberOfRegularHoles", 6)
-                .put("numberOfStonesPerRegularHole", 3);
+                .put("numberOfRegularHoles", numberOfRegularHoles)
+                .put("numberOfStonesPerRegularHole", numberOfStonesPerRegular);
 
-        HttpEntity<String> entity = new HttpEntity<String>(gameCreationObject.toString(), headers);
+        HttpEntity<String> entity = new HttpEntity<>(gameCreationObject.toString(), headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
