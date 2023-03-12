@@ -1,9 +1,10 @@
 package com.example.mancala_game;
-
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Game {
-    // has two game areas and a start and stop method
+    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private GameState gameState;
 
     private Player activePlayer;
@@ -11,6 +12,8 @@ public class Game {
     private Deque<Player> playerGameOrder = new ArrayDeque<>();
     private ArrayList<Hole> gameLogicList = new ArrayList<>();
     private Deque<Hole> gameLogicDeque = new ArrayDeque<>();
+
+    private int roundsPlayed;
     private int numberOfPlayers;
 
     private int numberOfStonesPerRegularHole;
@@ -24,7 +27,7 @@ public class Game {
         this.numberOfPlayers = playerNames.size();
         this.numberOfRegularHoles = numberOfRegularHoles;
         this.numberOfStonesPerRegularHole = numberOfStonesPerRegularHole;
-
+        this.roundsPlayed = 0;
         this.initialNumberOfStonesInGame = numberOfRegularHoles * numberOfStonesPerRegularHole * playerNames.size();
 
         int i = 1;
@@ -52,7 +55,7 @@ public class Game {
         this.gameLogicList = gameLogicList;
     }
 
-    public void initializeGameLogicList(){
+    public void initializeGameLogicStructures(){
         int gameLogicCounter = 0;
 
         for (Player player : players){
@@ -75,6 +78,56 @@ public class Game {
 
             gameLogicCounter++;
         }
+    }
+
+    public void startGame(){
+        this.setGameState(GameState.STARTED);
+
+        // get first player from dequeue and add him/her again at the end
+        this.setActivePlayer(this.getPlayerGameOrder().removeFirst());
+        this.getPlayerGameOrder().addLast(this.getActivePlayer());
+    }
+
+    public Game performGameAction(GameAction gameAction){
+
+        if(gameAction instanceof MoveAction moveAction){
+            // check if the sent command came from the active player
+            if (!moveAction.getActivePlayerName().equals(this.getActivePlayer().getPlayerName())){
+                logger.log(Level.INFO, "Command not sent from active player. Try again with correct player.");
+                return this;
+            }
+            else {
+
+                int startingPosition = moveAction.getStartPosition();
+
+                // get gameLogicPosition from Players gameArea
+                int gameLogicStartPosition = this.getActivePlayer().getGameArea().getGameLogicPositionFromPlayerPerspectivePosition(startingPosition);
+
+                //int allStonesInHole = this.myGame.getActivePlayer().getGameArea().getHoleFromGameLogicPosition(gameLogicStartPosition).takeAllStonesFromHole();
+                this.fillFollowingHolesInGameLogic(gameLogicStartPosition);
+
+                // set active player for next round
+                this.setActivePlayer(this.getPlayerGameOrder().removeFirst());
+                this.getPlayerGameOrder().addLast(this.getActivePlayer());
+
+                // update scores and check if game area empty
+                for (Player player : this.getPlayers()) {
+                    player.setPlayerScore(player.getGameArea().getMancalaHole().getStonesInHole());
+
+                    if (this.checkIfGameAreaIsEmpty(player)) {
+                        this.setGameState(GameState.ENDED);
+                    }
+                }
+            }
+        }
+
+        // After every gameAction check if the number of stones in the game doesn't deviate from the initial number
+        if (this.getAllStonesInGame() != this.getInitialNumberOfStonesInGame()) {
+            throw new RuntimeException("Mismatch of stones in game!");
+        }
+
+        this.setRoundsPlayed(this.getRoundsPlayed() + 1);
+        return this;
     }
 
     public int getGameLogicPositionOfOpposingHole(int positionFromPlayerPerspectiveOrignalHole){
@@ -240,6 +293,14 @@ public class Game {
             allStonesInRegularHoles += hole.getStonesInHole();
         }
         return allStonesInRegularHoles;
+    }
+
+    public int getRoundsPlayed() {
+        return this.roundsPlayed;
+    }
+
+    public void setRoundsPlayed(int roundsPlayed) {
+        this.roundsPlayed = roundsPlayed;
     }
 
     public boolean checkIfGameAreaIsEmpty(Player player){
