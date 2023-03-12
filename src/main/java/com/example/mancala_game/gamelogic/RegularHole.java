@@ -1,4 +1,4 @@
-package com.example.mancala_game;
+package com.example.mancala_game.gamelogic;
 
 public class RegularHole extends Hole{
 

@@ -1,4 +1,4 @@
-package com.example.mancala_game;
+package com.example.mancala_game.gamelogic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

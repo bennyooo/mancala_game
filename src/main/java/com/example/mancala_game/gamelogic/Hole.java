@@ -1,4 +1,4 @@
-package com.example.mancala_game;
+package com.example.mancala_game.gamelogic;
 
 public class Hole {
     // has stones and methods to add, remove and delete them

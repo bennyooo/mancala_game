@@ -1,5 +1,6 @@
 package com.example.mancala_game;
 
+import com.example.mancala_game.gamelogic.*;
 import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
@@ -16,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Simple frontend that calls the game API and renders the board in a console application.
+ */
 public class MancalaGameFrontEnd {
 
     public static void main(String args[]){
@@ -111,7 +115,6 @@ public class MancalaGameFrontEnd {
         return stringToRender.toString();
     }
 
-    //TODO: use parameters
     public static String callCreateGame(String gameId, List<String> playerList, int numberOfRegularHoles, int numberOfStonesPerRegular){
 
         final String url = "http://localhost:8080/createGame";
@@ -166,8 +169,4 @@ public class MancalaGameFrontEnd {
 
         return response.getBody();
     }
-
-
-
-
 }

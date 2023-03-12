@@ -1,4 +1,4 @@
-package com.example.mancala_game;
+package com.example.mancala_game.gamelogic;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -6,14 +6,12 @@ import java.util.logging.Logger;
 public class Game {
     private final transient Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private GameState gameState;
-
     private Player activePlayer;
     private String playerNameWhoWon = "";
     private ArrayList<Player> players = new ArrayList<>();
     private Deque<Player> playerGameOrder = new ArrayDeque<>();
     private ArrayList<Hole> gameLogicList = new ArrayList<>();
     private Deque<Hole> gameLogicDeque = new ArrayDeque<>();
-
     private int roundsPlayed;
     private int numberOfPlayers;
 
@@ -84,7 +82,7 @@ public class Game {
     public void startGame(){
         this.setGameState(GameState.STARTED);
 
-        // get first player from dequeue and add him/her again at the end
+        // get first player from dequeue and add them again at the end
         this.setActivePlayer(this.getPlayerGameOrder().removeFirst());
         this.getPlayerGameOrder().addLast(this.getActivePlayer());
     }
@@ -100,6 +98,7 @@ public class Game {
 
     public Game performGameAction(GameAction gameAction){
 
+        // Possible other GameActions in the future so we need to check the type
         if(gameAction instanceof MoveAction moveAction){
             // check if the sent command came from the active player
             if (!moveAction.getActivePlayerName().equals(this.getActivePlayer().getPlayerName())){
@@ -110,24 +109,39 @@ public class Game {
 
                 int startingPosition = moveAction.getStartPosition();
 
-                // get gameLogicPosition from Players gameArea
-                int gameLogicStartPosition = this.getActivePlayer().getGameArea().getGameLogicPositionFromPlayerPerspectivePosition(startingPosition);
+                if(startingPosition > this.getActivePlayer().getGameArea().getNumberOfRegularHoles() || startingPosition < 1){
+                    logger.log(Level.INFO, "Selected position out of bounds for this board. Select a different position.");
+                    return this;
+                }
+                else if (activePlayer.getGameArea().getHoleFromPlayerPerspectivePosition(startingPosition).getStonesInHole() == 0){
+                    logger.log(Level.INFO, "Selected position has no stones. Select a different position.");
+                    return this;
+                }
 
-                //int allStonesInHole = this.myGame.getActivePlayer().getGameArea().getHoleFromGameLogicPosition(gameLogicStartPosition).takeAllStonesFromHole();
-                this.fillFollowingHolesInGameLogic(gameLogicStartPosition);
+                else {
+                    // get gameLogicPosition from Players gameArea
+                    int gameLogicStartPosition = this.getActivePlayer().getGameArea().getGameLogicPositionFromPlayerPerspectivePosition(startingPosition);
 
-                // set active player for next round
-                this.setActivePlayer(this.getPlayerGameOrder().removeFirst());
-                this.getPlayerGameOrder().addLast(this.getActivePlayer());
+                    this.fillFollowingHolesInGameLogic(gameLogicStartPosition);
 
-                // update scores and check if game area empty
-                for (Player player : this.getPlayers()) {
-                    player.setPlayerScore(player.getGameArea().getMancalaHole().getStonesInHole());
+                    // set active player for next round
+                    this.setActivePlayer(this.getPlayerGameOrder().removeFirst());
+                    this.getPlayerGameOrder().addLast(this.getActivePlayer());
 
-                    if (this.checkIfGameAreaIsEmpty(player)) {
-                        this.setGameState(GameState.ENDED);
+                    // update scores and check if game areas are empty
+                    for (Player player : this.getPlayers()) {
+                        player.setPlayerScore(player.getGameArea().getMancalaHole().getStonesInHole());
 
-                        this.setPlayerNameWhoWon(Objects.requireNonNull(this.getPlayers().stream().max(Comparator.comparing(Player::getPlayerScore)).orElse(null)).getPlayerName());
+                        if (this.checkIfGameAreaIsEmpty(player)) {
+                            this.setGameState(GameState.ENDED);
+
+                            this.setPlayerNameWhoWon(Objects.requireNonNull(this
+                                            .getPlayers()
+                                            .stream()
+                                            .max(Comparator.comparing(Player::getPlayerScore))
+                                            .orElse(null))
+                                            .getPlayerName());
+                        }
                     }
                 }
             }
@@ -142,9 +156,64 @@ public class Game {
         return this;
     }
 
-    public int getGameLogicPositionOfOpposingHole(int positionFromPlayerPerspectiveOrignalHole){
+    public void fillFollowingHolesInGameLogic(int gameLogicStartPosition){
+        int stonesToDistribute = 0;
 
-        return 0;
+        // loop over all holes and check if gameLogicStartPosition is correct, otherwise add hole to end
+        for (Hole hole : gameLogicDeque){
+            if (hole.getPositionInGameLogic() == gameLogicStartPosition){
+                Hole holeToTakeStonesFrom = this.gameLogicDeque.removeFirst();
+                stonesToDistribute = holeToTakeStonesFrom.takeAllStonesFromHole();
+                this.gameLogicDeque.addLast(holeToTakeStonesFrom);
+                break;
+            }
+            else {
+                this.gameLogicDeque.addLast(this.gameLogicDeque.removeFirst());
+            }
+        }
+
+        for (int s = 1; s <= stonesToDistribute; s++){
+            Hole activeHole = this.gameLogicDeque.removeFirst();
+            // only add stones to regular hole or the player's mancala hole
+            if (activeHole instanceof RegularHole || activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())) {
+                activeHole.addStoneToHole();
+            }
+
+            this.gameLogicDeque.addLast(activeHole);
+
+            // if the last hole is a mancala hole, the currently active player can go again
+            if (s == stonesToDistribute){
+                if (activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())) {
+                    this.playerGameOrder.addLast(this.playerGameOrder.removeFirst());
+                }
+
+                // last hole was regular hole that now has one stone -> rule of capturing stones from opposite field applies
+                if (activeHole instanceof RegularHole && activeHole.getStonesInHole() == 1){
+                    // we need to know on which side we are
+                    int positionFromPlayerPerspectiveActiveHole = activeHole.getPositionFromPlayerPerspective();
+
+                    int allStonesFromOppositeHole = 0;
+
+                    // check if active hole belongs to opponents area, if so take own game area to remove stones
+                    if (this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName()).getGameArea().getRegularHoles().contains(activeHole)){
+                        allStonesFromOppositeHole = this.activePlayer.getGameArea()
+                                .getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveActiveHole)
+                                .takeAllStonesFromHole();
+                    }
+                    else {
+                        allStonesFromOppositeHole = this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName())
+                                .getGameArea().getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveActiveHole)
+                                .takeAllStonesFromHole();
+                    }
+
+                    // only take stones if the opposite hole is not empty
+                    if (allStonesFromOppositeHole > 0) {
+                        int totalStones = allStonesFromOppositeHole + activeHole.takeAllStonesFromHole();
+                        this.activePlayer.getGameArea().getMancalaHole().addMultipleStonesToMancalaHole(totalStones);
+                    }
+                }
+            }
+        }
     }
 
     public int getNumberOfStonesPerRegularHole() {
@@ -161,13 +230,6 @@ public class Game {
 
     public int getNumberOfPlayers() {
         return this.numberOfPlayers;
-    }
-
-    public void setGameLogicList(){
-
-    }
-    public void setPositionForHoles(){
-
     }
 
     public int getNumberOfRegularHoles() {
@@ -217,67 +279,6 @@ public class Game {
 
     public void setInitialNumberOfStonesInGame(int initialNumberOfStonesInGame) {
         this.initialNumberOfStonesInGame = initialNumberOfStonesInGame;
-    }
-
-    public void fillFollowingHolesInGameLogic(int gameLogicStartPosition){
-        int stonesToDistribute = 0;
-
-        // loop over all holes and check if gameLogicStartPosition is correct, otherwise add hole to end
-        for (Hole hole : gameLogicDeque){
-            if (hole.getPositionInGameLogic() == gameLogicStartPosition){
-                Hole holeToTakeStonesFrom = this.gameLogicDeque.removeFirst();
-                stonesToDistribute = holeToTakeStonesFrom.takeAllStonesFromHole();
-                this.gameLogicDeque.addLast(holeToTakeStonesFrom);
-                break;
-            }
-            else {
-                this.gameLogicDeque.addLast(this.gameLogicDeque.removeFirst());
-            }
-        }
-
-        for (int j = 1; j <= stonesToDistribute; j++){
-            Hole activeHole = this.gameLogicDeque.removeFirst();
-            // only add stones to regular hole or the player's mancala hole
-            if (activeHole instanceof RegularHole || activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())) {
-                activeHole.addStoneToHole();
-            }
-
-            this.gameLogicDeque.addLast(activeHole);
-
-            // if the last hole is a mancala hole, the currently active player can go again
-            if (j == stonesToDistribute){
-                if (activeHole.equals(this.activePlayer.getGameArea().getMancalaHole())) {
-                    this.playerGameOrder.addLast(this.playerGameOrder.removeFirst());
-                }
-
-                // last hole was regular hole that now has one stone -> rule of capturing stones from opposite field applies
-                if (activeHole instanceof RegularHole && activeHole.getStonesInHole() == 1){
-                    // we need to know on which side we are
-                    int positionFromPlayerPerspectiveActiveHole = activeHole.getPositionFromPlayerPerspective();
-
-                    int allStonesFromOppositeHole = 0;
-
-                    // check if active hole belongs to opponents area, if so take own game area to remove stones
-                    if (this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName()).getGameArea().getRegularHoles().contains(activeHole)){
-                        allStonesFromOppositeHole = this.activePlayer.getGameArea()
-                                .getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveActiveHole)
-                                .takeAllStonesFromHole();
-                    }
-                    else {
-                        allStonesFromOppositeHole = this.getPlayerByPlayerName(this.activePlayer.getOppositePlayerName())
-                                .getGameArea().getHoleFromPlayerPerspectivePosition((this.numberOfRegularHoles+1)-positionFromPlayerPerspectiveActiveHole)
-                                .takeAllStonesFromHole();
-                    }
-
-                    // only take stones if the opposite hole is not empty
-                    if (allStonesFromOppositeHole > 0) {
-                        int totalStones = allStonesFromOppositeHole + activeHole.takeAllStonesFromHole();
-                        this.activePlayer.getGameArea().getMancalaHole().addMultipleStonesToMancalaHole(totalStones);
-                    }
-                }
-            }
-        }
-
     }
 
     public String getPlayerNameWhoWon() {

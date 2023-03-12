@@ -1,15 +1,11 @@
-package com.example.mancala_game;
+package com.example.mancala_game.gamelogic;
 
 public class MoveAction extends GameAction{
-
     private int startPosition;
 
-    // the player who triggered the action
-    private String activePlayerName;
-
     public MoveAction(int startPosition, String activePlayerName) {
+        super(activePlayerName);
         this.startPosition = startPosition;
-        this.activePlayerName = activePlayerName;
     }
 
     public int getStartPosition() {
@@ -18,13 +14,5 @@ public class MoveAction extends GameAction{
 
     public void setStartPosition(int startPosition) {
         this.startPosition = startPosition;
-    }
-
-    public String getActivePlayerName() {
-        return activePlayerName;
-    }
-
-    public void setActivePlayerName(String activePlayerName) {
-        this.activePlayerName = activePlayerName;
     }
 }
