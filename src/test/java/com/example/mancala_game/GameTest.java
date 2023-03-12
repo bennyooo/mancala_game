@@ -3,7 +3,7 @@ package com.example.mancala_game;
 import com.example.mancala_game.gamelogic.Game;
 import com.example.mancala_game.gamelogic.MoveAction;
 import com.example.mancala_game.gamelogic.Player;
-import com.example.mancala_game.gamelogic.RegularHole;
+import com.example.mancala_game.gamelogic.holes.RegularHole;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

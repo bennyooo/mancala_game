@@ -1,5 +1,8 @@
 package com.example.mancala_game.gamelogic;
 
+/**
+ * Action for moving the stones over the board.
+ */
 public class MoveAction extends GameAction{
     private int startPosition;
 

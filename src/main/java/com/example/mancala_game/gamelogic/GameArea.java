@@ -1,5 +1,8 @@
 package com.example.mancala_game.gamelogic;
 
+import com.example.mancala_game.gamelogic.holes.Hole;
+import com.example.mancala_game.gamelogic.holes.MancalaHole;
+import com.example.mancala_game.gamelogic.holes.RegularHole;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,10 +13,6 @@ import java.util.List;
  * The game area of the player on the board.
  */
 public class GameArea {
-    // has Holes. Needs methods to initialize holes.
-
-    // MancalaHole can be in first or last position
-    // the game logic list will consist of two concatenated lists (?)
     private AreaOrientation areaOrientation;
     private List<RegularHole> regularHoles = new ArrayList<>();
     private MancalaHole mancalaHole;

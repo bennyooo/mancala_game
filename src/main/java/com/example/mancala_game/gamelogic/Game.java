@@ -1,10 +1,13 @@
 package com.example.mancala_game.gamelogic;
+import com.example.mancala_game.gamelogic.holes.Hole;
+import com.example.mancala_game.gamelogic.holes.RegularHole;
+
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This contains all the game logic.
+ * This contains all the game logic and components.
  */
 public class Game {
     private final transient Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);

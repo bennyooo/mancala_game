@@ -1,7 +1,6 @@
 package com.example.mancala_game.gamelogic;
 
 public class Player {
-    // has a score and a game area
     private int playerScore;
     private String playerName;
     private String oppositePlayerName;

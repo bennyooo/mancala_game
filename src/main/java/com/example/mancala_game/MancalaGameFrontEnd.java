@@ -1,6 +1,7 @@
 package com.example.mancala_game;
 
 import com.example.mancala_game.gamelogic.*;
+import com.example.mancala_game.gamelogic.holes.Hole;
 import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
