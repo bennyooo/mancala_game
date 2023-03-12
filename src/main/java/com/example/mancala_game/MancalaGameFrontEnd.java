@@ -99,7 +99,7 @@ public class MancalaGameFrontEnd {
 
         if (gameArea.getAreaOrientation() == AreaOrientation.REGULAR){
             // TODO: instead of repeat 1 create number of " " characters dynamically based on the stones in the opponents mancala hole
-            // we create some space for the regula game are so that they align in the terminal
+            // we create some space for the regular game so that they both align in the terminal
             stringToRender.append("  ").append(" ".repeat(1)).append("  ");
 
             holesToDisplay.addAll(gameArea.getRegularHoles());

@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The game area of the player on the board.
+ */
 public class GameArea {
     // has Holes. Needs methods to initialize holes.
 

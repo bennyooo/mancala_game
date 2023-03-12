@@ -3,6 +3,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This contains all the game logic.
+ */
 public class Game {
     private final transient Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private GameState gameState;
@@ -14,7 +17,6 @@ public class Game {
     private Deque<Hole> gameLogicDeque = new ArrayDeque<>();
     private int roundsPlayed;
     private int numberOfPlayers;
-
     private int numberOfStonesPerRegularHole;
 
     private int initialNumberOfStonesInGame;
