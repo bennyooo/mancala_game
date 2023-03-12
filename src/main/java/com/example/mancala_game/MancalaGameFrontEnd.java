@@ -70,7 +70,13 @@ public class MancalaGameFrontEnd {
                     System.out.println(stringToRender);
                 }
 
-                System.out.print("\n Select position of hole (1-6):");
+                if (game.getActivePlayer().getGameArea().getAreaOrientation() == AreaOrientation.REGULAR) {
+                    System.out.print("\n Select position of hole (1-6):");
+                }
+                else {
+                    System.out.print("\n Select position of hole (6-1):");
+                }
+
                 try {
                     int selectedPosition = Integer.parseInt(reader.readLine());
                     game = gson.fromJson(callMoveStones(selectedPosition, activePlayerName), Game.class);
