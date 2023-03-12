@@ -13,15 +13,13 @@ import java.util.*;
 public class GameTest {
 
     Game activeGame;
-    List<String> playerNames;
+    String gameId = "testGameId123";
+    List<String> playerNames = new ArrayList<>(Arrays.asList("Player1", "Player2"));
+    int numberOfRegularHoles = 6;
+    int numberOfStonesPerRegularHole = 3;
 
     @BeforeEach
     public void init(){
-        String gameId = "testGameId123";
-        List<String> playerNames = new ArrayList<>(Arrays.asList("Player1", "Player2"));
-        int numberOfRegularHoles = 6;
-        int numberOfStonesPerRegularHole = 3;
-
         activeGame = new Game(gameId, playerNames, numberOfRegularHoles, numberOfStonesPerRegularHole);
         activeGame.initializeGameLogicStructures();
     }
